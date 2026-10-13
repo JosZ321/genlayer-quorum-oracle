@@ -80,6 +80,31 @@ The 71 tests run against `tests/genlayer_stub.py`, a small in-memory stand-in fo
 3. `create_feed` with, for example: a short question, your three URLs, `decimals` = 0, `min_quorum` = 2, `tolerance_bps` = 100, `sig_digits` = 4.
 4. `resolve` the feed, then `get_round(feed_id, 1)` to inspect per-source evidence, then `get_latest`.
 
+## Live Studio execution record
+
+The following result was reported for the `demo` feed during a successful live run of the updated contract. The transaction links below were supplied for this run. The links use the GenLayer Studio Explorer; this README does not label the run as Bradbury because the supplied links alone do not establish that network selection.
+
+- **Network / explorer:** GenLayer Studio Explorer
+- **Deployment transaction:** [View deployment transaction](https://explorer-studio.genlayer.com/tx/0x36a2bae2f96e8053ad7fa35ce5d8e87fff6e0b086868c36fe6c7c9624ab511d3)
+- **Contract address:** Open the deployment transaction above and copy the created contract address shown in its details. The address itself was not included in the supplied message.
+- **Successful `resolve` transaction:** [View resolve transaction](https://explorer-studio.genlayer.com/tx/0x80980a6b86aa030798ef39b83d67bef2adcaffd5fb2638a504508b7e9b10632a)
+- **Feed:** `demo`
+- **Round:** `1`
+- **Round status:** `FINALIZED`
+- **Canonical value:** `122400000`
+
+The `get_round("demo", 1)` output reported `agreeing = 2`, `reporting = 2`, and `status = FINALIZED`. The per-source evidence was:
+
+| Source | Status | Extracted number | Scaled value | Characters read |
+|---|---|---:|---:|---:|
+| [StatisticsTimes: Japan population](https://www.statisticstimes.com/demographics/country/japan-population.php) | `OK` | `122,427,731` | `122427731` | 9262 |
+| [Worldometer: Japan population](https://www.worldometers.info/world-population/japan-population/) | `OK` | `122,427,731` | `122427731` | 7434 |
+| [JetPunk: Japan population](https://www.jetpunk.com/data/population/countries/japan) | `NOT_FOUND` | — | `0` | 16 |
+
+Two usable sources met the configured `min_quorum = 2`. At `sig_digits = 4`, the canonical value was rounded from `122427731` to `122400000`. The subsequent `get_latest("demo")` read returned `decimals = 0`, `round = 1`, `rounds_behind = 0`, and `value = "122400000"`. This confirms that the latest finalized value was current at the time of the read.
+
+**Submission note:** Before the final submission, copy the deployed contract address from the linked deployment transaction into this section. Keep both transaction links intact and confirm that the resolve transaction corresponds to this deployed instance.
+
 ## Known limitations
 
 - `resolve` can be called by anyone, and every call appends a round, so history can grow. Failed rounds never change the value consumers read. A production deployment may want a cooldown or a fee.
